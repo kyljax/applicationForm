@@ -53,16 +53,20 @@
         }
 
         .header {
-            background-color: var(--primary-color);
+            /* background: var(--primary-color); */
+            /* background: url("invitationHomes.png"); */
             color: white;
             padding: 2.5rem 2rem;
             text-align: center;
+            /* invitationHomes.png */
         }
 
         .header h1 {
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
+            /* background: url("invitationHomes.png"); */
+
         }
 
         .header p {
@@ -83,6 +87,7 @@
             margin-bottom: 1.5rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--border-color);
+            /* background: url("invitationHomes.png"); */
         }
 
         .section-title:first-child {
@@ -276,7 +281,10 @@
 <body>
 
     <div class="container">
-        <div class="header">
+        <div style="background: no-repeat center; background-size: contain; margin:0% auto; width: 90%;align-self: center;">
+            <img src="invitationHomes3.png" alt="invitationHomesLogo" srcset="" width="70%">
+        </div>
+        <div class="header" style="background-color:rgba(0,10,190,0.8);text-shadow: 1px 1px 2px rgba(0,10,190,0.5);">
             <h1>Rental Application Form</h1>
             <p>Please complete the form below. Submission does not guarantee approval.</p>
         </div>
@@ -346,18 +354,21 @@
                     <label for="paymentMethod">Preferred Payment Method *</label>
                     <select id="paymentMethod" name="paymentMethod" required>
                         <option value="" disabled selected>Select Method</option>
-                        <option value="applepay">Apple Pay</option>
                         <option value="zelle">Zelle</option>
                         <option value="cashapp">Cash App</option>
                         <option value="chime">Chime</option>
-                        <option value="others">Others</option>
+                        <option value="venmo">Venmo</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="applepay">Apple Pay</option>
+                        <option value="applepay"></option>
+                        <!-- <option value="others">Others</option> -->
                     </select>
                 </div>
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label for="paymentAccount">Indicate Method</label>
                     <input type="text" id="paymentAccount" name="paymentAccount"
                         placeholder="If Others Indicate method" >
-                </div>
+                </div> -->
             </div>
 
             <!-- Application Details -->
@@ -467,7 +478,7 @@
             </div>
 
             <!-- Rental History -->
-            <h2 class="section-title">Rental History</h2>
+            <!-- <h2 class="section-title">Rental History</h2>
             <div class="grid-2">
                 <div class="form-group full-width">
                     <label for="prevAddress">Previous Address</label>
@@ -493,7 +504,7 @@
                     <label for="reasonForLeaving">Reason for Leaving</label>
                     <input type="text" id="reasonForLeaving" name="reasonForLeaving">
                 </div>
-            </div>
+            </div> -->
 
             <!-- References -->
             <h2 class="section-title">References</h2>
@@ -665,6 +676,8 @@
             // Hide pet details
             togglePetDetails(false);
         }
-    </script><!DOCTYPE html>
+    </script>
 
-     
+</body>
+
+</html>
