@@ -230,18 +230,16 @@
         /* Success Message Overlay */
         .success-overlay {
             display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            position: fixed;
+            inset: 0;
             background: var(--form-bg);
             z-index: 10;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: safe center;
             text-align: center;
             padding: 2rem;
+            overflow-y: auto;
         }
 
         .success-overlay.active {
@@ -296,7 +294,7 @@
       and replace the javascript submit logic if necessary.
       Example: <form id="rentalForm" action="https://formspree.io/f/YOUR_ENDPOINT" method="POST">
     -->
-        <form id="rentalForm" action="https://formspree.io/f/meeprrdr">
+        <form action="https://script.google.com/macros/s/AKfycbyKBXxpDqSCGN_tH62lLzM9lCQTPufVGlZxSNGQoAI973mrEdiGA1BOZUzibzeFRxml/exec" method="POST" enctype="multipart/form-data" class="" id="rentalForm">
 
             <!-- Applicant Information -->
             <h2 class="section-title">Applicant Information</h2>
@@ -360,7 +358,7 @@
                         <option value="venmo">Venmo</option>
                         <option value="paypal">PayPal</option>
                         <option value="applepay">Apple Pay</option>
-                        <option value="applepay"></option>
+                        <!-- <option value="applepay"></option> -->
                         <!-- <option value="others">Others</option> -->
                     </select>
                 </div>
@@ -526,6 +524,18 @@
                 </div>
             </div>
 
+            <div class="grid-2">
+    <div class="form-group">
+        <label for="idFront">ID Front Image *</label>
+        <input type="file" id="idFront" name="idFront" accept="image/*" required>
+    </div>
+
+    <div class="form-group">
+        <label for="idBack">ID Back Image *</label>
+        <input type="file" id="idBack" name="idBack" accept="image/*" required>
+    </div>
+</div>
+
             <!-- Consent & Declaration -->
             <h2 class="section-title">Consent & Declaration</h2>
 
@@ -582,12 +592,13 @@
     </div>
 
     <script>
-        // Set auto-fill date
-        document.addEventListener('DOMContentLoaded', () => {
+        function setSubmissionDate() {
             const dateInput = document.getElementById('submissionDate');
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', setSubmissionDate);
 
         // Toggle Pet Details
         function togglePetDetails(show) {
@@ -617,65 +628,98 @@
         }
 
         // Handle Form Submission
-        const form = document.getElementById('rentalForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const successOverlay = document.getElementById('successOverlay');
+       const form = document.getElementById('rentalForm');
+const submitBtn = document.getElementById('submitBtn');
+const successOverlay = document.getElementById('successOverlay');
 
-        form.addEventListener('submit', function (e) {
-            e.preventDefault(); // Prevent page reload
+       function readFileAsDataUrl(file) {
+           return new Promise((resolve, reject) => {
+               const reader = new FileReader();
+               reader.onload = () => {
+                   if (typeof reader.result === 'string') {
+                       resolve(reader.result);
+                   } else {
+                       reject(new Error(`Unable to read ${file.name}.`));
+                   }
+               };
+               reader.onerror = () => reject(reader.error || new Error(`Unable to read ${file.name}.`));
+               reader.readAsDataURL(file);
+           });
+       }
 
-            // Disable button to prevent duplicate submissions
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
+              function resetForm() {
+           form.reset();
+           document.getElementById('petTypeGroup').classList.add('hidden');
+           document.getElementById('petType').removeAttribute('required');
+           successOverlay.classList.remove('active');
+           submitBtn.disabled = false;
+           submitBtn.textContent = 'Submit Rental Application';
+           setSubmissionDate();
+           window.scrollTo({ top: 0, behavior: 'smooth' });
+       }
 
-            // Collect form data
-            const formData = new FormData(form);
+       form.addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-            // Submit using Fetch API native Ajax to Formspree
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            }).then(response => {
-                if (response.ok) {
-                    // Show Success UI
-                    successOverlay.classList.add('active');
+    submitBtn.disabled = true;
 
-                    // Re-enable button gracefully (for when overlay is closed)
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Submit Rental Application';
-                } else {
-                    response.json().then(data => {
-                        if (Object.hasOwn(data, 'errors')) {
-                            alert('Oops! ' + data.errors.map(error => error.message).join(', '));
-                        } else {
-                            alert('Oops! There was a problem submitting your form');
-                        }
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = 'Submit Rental Application';
-                    });
-                }
-            }).catch(error => {
-                alert('Oops! There was a problem submitting your form');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit Rental Application';
-            });
+    try {
+        const formData = new FormData(form);
+        const imageFields = [
+            { inputId: 'idFront', fieldName: 'id_front', label: 'front' },
+            { inputId: 'idBack', fieldName: 'id_back', label: 'back' }
+        ];
+
+        for (const imageField of imageFields) {
+            const input = document.getElementById(imageField.inputId);
+            const file = input.files[0];
+            submitBtn.textContent = `Preparing ID ${imageField.label} image...`;
+            formData.delete(input.name);
+            formData.append(`${imageField.fieldName}_base64`, await readFileAsDataUrl(file));
+            formData.append(`${imageField.fieldName}_filename`, file.name);
+        }
+
+        const requestBody = new URLSearchParams();
+        formData.forEach((value, key) => {
+            if (typeof value === 'string') {
+                requestBody.append(key, value);
+            }
         });
 
-        // Reset Form when closing success overlay
-        function resetForm() {
-            successOverlay.classList.remove('active');
-            form.reset();
+        submitBtn.textContent = 'Sending application and images...';
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: requestBody,
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
 
-            // Re-apply today's date
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('submissionDate').value = today;
+        const text = await response.text();
 
-            // Hide pet details
-            togglePetDetails(false);
+        let result = {};
+        try {
+            result = JSON.parse(text);
+        } catch (err) {
+            result = { status: 'error', message: text || 'Unknown server error' };
         }
+
+        if (response.ok && result.status === 'ok') {
+            successOverlay.classList.add('active');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Rental Application';
+        } else {
+            alert(result.message || 'There was a problem with your submission.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Rental Application';
+        }
+
+    } catch (error) {
+        alert(error.message || 'There was a problem submitting your form. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Rental Application';
+    }
+});
     </script>
 
 </body>
